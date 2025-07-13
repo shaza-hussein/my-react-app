@@ -2,6 +2,47 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Project Features
+
+### Authentication System
+- User registration and login
+- OTP verification
+- Password reset functionality
+- Protected routes
+- Session management with cookies
+
+### Profile Management
+- User profile display with real-time data from backend
+- Profile information editing (planned)
+- Password settings management
+- Account status display
+
+### Error Handling
+- Automatic extraction of error messages from backend responses
+- Support for multiple error response formats:
+  - Simple string messages
+  - JSON with `message` field
+  - Arabic messages (`message_ar`)
+  - Field-specific errors (`errors` object)
+  - Django-style `non_field_errors`
+  - REST Framework `detail` field
+  - Array of error messages
+- Network error detection
+- Minimal fallback messages only when backend message cannot be extracted
+
+### Custom Hooks
+- `useLoginForm` - Login form management
+- `useRegisterForm` - Registration form management
+- `useResetPasswordForm` - Password reset form management
+- `useVerifyOTP` - OTP verification management
+- `useProfile` - User profile data management
+
+### API Structure
+- `PublicAuth.js` - Public API endpoints (login, register, etc.)
+- `ProtectedAuth.js` - Protected API endpoints (profile, logout, etc.)
+- Centralized error handling
+- Automatic token refresh
+
 ## Available Scripts
 
 In the project directory, you can run:
