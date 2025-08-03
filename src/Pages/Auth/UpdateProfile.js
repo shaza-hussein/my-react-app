@@ -1,94 +1,54 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { FaUser, FaCamera, FaSave, FaTimes } from 'react-icons/fa';
 import InputField from '../../Components/InputField';
 import Button from '../../Components/Button';
 import Alert from '../../Components/Alert';
-import { useUpdateProfile, useProfile } from '../../Hooks';
-import { validateRegisterForm } from '../../Utils/validateForm';
+import { useProfile, useUpdateProfile } from '../../Hooks';
+import Loading from '../../Components/Loading';
+import { useImagePreview } from '../../Hooks';
 
 const defaultImg = require('../../Assets/images/user.png');
 
 const UpdateProfile = () => {
-    // مرجع لحقل رفع الصورة
-    const fileInputRef = useRef(null);
+    // هوك معاينة الصورة
+    const {
+        imagePreview,
+        fileInputRef,
+        handleImageClick,
+        handleImageChange,
+        handleRemoveImage
+    } = useImagePreview(defaultImg);
+    
     // جلب بيانات البروفايل الحالية
     const { profile, loading: loadingProfile, error: errorProfile, refreshProfile } = useProfile();
-    // حالة لتخزين الصورة المختارة مؤقتاً
-    const [imagePreview, setImagePreview] = useState(defaultImg);
-    // حالات الحقول
-    const [fields, setFields] = useState({
-        first_name: '',
-        father_name: '',
-        last_name: ''
-    });
-    // أخطاء الحقول
-    const [errors, setErrors] = useState({});
-
-    // هوك تحديث البروفايل
+    
+    // هوك تحديث البروفايل مع إدارة النموذج
     const {
-        updateProfile,
+        fields,
+        errors,
         loading,
         error,
         success,
         clearError,
-        clearSuccess
+        clearSuccess,
+        handleChange,
+        handleSubmit,
+        setFieldsFromProfile
     } = useUpdateProfile();
 
     // عند تحميل بيانات البروفايل، املأ الحقول تلقائياً
     useEffect(() => {
-        if (profile) {
-            setFields({
-                first_name: profile.first_name || '',
-                father_name: profile.father_name || '',
-                last_name: profile.last_name || ''
-            });
-            // إذا أردت جلب صورة من البروفايل مستقبلاً أضفها هنا
+        if (
+            profile && (
+                fields.first_name !== (profile.first_name || '') ||
+                fields.father_name !== (profile.father_name || '') ||
+                fields.last_name !== (profile.last_name || '')
+            )
+        ) {
+            setFieldsFromProfile(profile);
         }
+        // eslint-disable-next-line
     }, [profile]);
-
-    // دالة لفتح نافذة اختيار الصورة
-    const handleImageClick = () => {
-        fileInputRef.current.click();
-    };
-
-    // دالة عند اختيار صورة جديدة
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    // دالة لتغيير الحقول
-    const handleChange = (e) => {
-        setFields({ ...fields, [e.target.name]: e.target.value });
-        // مسح الخطأ عند التغيير
-        setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
-    };
-
-    // دالة لحذف الصورة (إرجاعها للصورة الافتراضية)
-    const handleRemoveImage = () => {
-        setImagePreview(defaultImg);
-    };
-
-    // دالة إرسال النموذج
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        // تحقق من صحة الحقول
-        const validationErrors = validateRegisterForm(fields);
-        // نريد فقط التحقق من الاسم الأول واسم الأب والكنية
-        delete validationErrors.phone_number;
-        delete validationErrors.password;
-        delete validationErrors.password_confirmation;
-        setErrors(validationErrors);
-        if (Object.keys(validationErrors).length > 0) return;
-        // إرسال فقط الحقول النصية (الصورة غير مدعومة من الباكند)
-        await updateProfile(fields);
-    };
 
     // معالجة حالات التحميل أو الخطأ في جلب البروفايل
     if (loadingProfile) {
@@ -176,7 +136,7 @@ const UpdateProfile = () => {
                 {/* زر الحفظ */}
                 <div className="flex justify-center mt-6">
                     <Button type="submit" Icon={FaSave} className="w-auto px-8 py-2 text-lg font-normal" disabled={loading}>
-                        {loading ? '...جاري التحديث' : 'تحديث'}
+                        {loading ? <Loading type="dots" size="sm" text="جاري التحديث" color="main1" /> : 'تحديث'}
                     </Button>
                 </div>
             </form>

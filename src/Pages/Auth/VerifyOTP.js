@@ -4,6 +4,7 @@ import useVerifyOTP from "../../Hooks/useVerifyOTP";
 import logo from "../../Assets/images/logo.jpg";
 import Button from "../../Components/Button";
 import Alert from "../../Components/Alert";
+import Loading from "../../Components/Loading";
 
 export default function VerifyOTP() {
   const { state } = useLocation();
@@ -40,7 +41,7 @@ export default function VerifyOTP() {
           </div>
 
           <Button type="submit" className="mb-4 font-tajawal text-xl" disabled={loading}>
-            {loading ? "...جاري التحقق" : "تأكيد"}
+            {loading ? <Loading type="dots" size="sm" text="جاري التحقق" color="light" /> : "تأكيد"}
           </Button>
         </form>
 

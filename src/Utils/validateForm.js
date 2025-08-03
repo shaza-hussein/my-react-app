@@ -69,3 +69,14 @@ export function validateResetPasswordForm(values) {
   }
   return errors;
 }
+
+export function validateChangePasswordForm(fields) {
+  const errors = {};
+  if (!fields.old_password) errors.old_password = "كلمة المرور الحالية مطلوبة";
+  if (!fields.new_password) errors.new_password = "كلمة المرور الجديدة مطلوبة";
+  if (fields.new_password && fields.new_password.length < 6)
+    errors.new_password = "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل";
+  if (fields.new_password !== fields.confirm_password)
+    errors.confirm_password = "كلمتا المرور غير متطابقتين";
+  return errors;
+}

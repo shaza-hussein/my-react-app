@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { ListLoading, CardLoading } from '../../Components/Loading';
 
 const UsersList = () => {
-
-    return(
-        <div>
-            all users 
-        </div>
+    return (
+        <div>all users</div>
     );
 }
 

@@ -4,6 +4,7 @@ import logo from "../../Assets/images/logo.jpg";
 import InputField from "../../Components/InputField";
 import Button from "../../Components/Button";
 import Alert from "../../Components/Alert";
+import Loading from "../../Components/Loading";
 import { FaLock, FaPaperPlane } from "react-icons/fa";
 import useResetPasswordForm from "../../Hooks/useResetPasswordForm";
 
@@ -41,7 +42,7 @@ const ResetPassword = () => {
           />
 
           <Button type="submit" className="mt-2 font-tajawal text-xl" Icon={FaPaperPlane} disabled={loading}>
-            {loading ? "...جاري الإرسال" : "إرسال"}
+            {loading ? <Loading type="dots" size="sm" text="جاري الإرسال" color="light" /> : "إرسال"}
           </Button>
         </form>
         {error && <Alert type="error">{error}</Alert>}
@@ -51,4 +52,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword; 
+export default ResetPassword;

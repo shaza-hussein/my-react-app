@@ -1,32 +1,28 @@
-import React, { useState } from 'react';
-import { FaLock, FaSave } from 'react-icons/fa';
+import React from 'react';
+import { FaLock } from 'react-icons/fa';
 import InputField from '../../Components/InputField';
 import Button from '../../Components/Button';
+import Alert from '../../Components/Alert';
+import { useChangePassword } from '../../Hooks';
+import Loading from '../../Components/Loading';
 
 const ChangePassword = () => {
-    // حالات الحقول
-    const [fields, setFields] = useState({
-        old_password: '',
-        new_password: '',
-        confirm_password: ''
-    });
-    // أخطاء الحقول (مستقبلاً)
-    const [errors, setErrors] = useState({});
-
-    // دالة لتغيير الحقول
-    const handleChange = (e) => {
-        setFields({ ...fields, [e.target.name]: e.target.value });
-        setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
-    };
-
-    // دالة إرسال النموذج (مستقبلاً)
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // تحقق من صحة الحقول وأرسل الطلب هنا
-    };
+    const {
+        fields,
+        errors,
+        loading,
+        success,
+        error,
+        handleChange,
+        handleSubmit,
+        clearError,
+        clearSuccess
+    } = useChangePassword();
 
     return (
         <form className="space-y-5 font-tajawal" onSubmit={handleSubmit}>
+            {error && <Alert type="error" onClose={clearError}>{error}</Alert>}
+            {success && <Alert type="success" onClose={clearSuccess}>{success}</Alert>}
             {/* حقل كلمة المرور القديمة */}
             <InputField
                 name="old_password"
@@ -59,8 +55,8 @@ const ChangePassword = () => {
             />
             {/* زر الحفظ */}
             <div className="flex justify-center mt-6">
-                <Button type="submit" Icon={FaSave} className="w-auto px-8 py-2 text-lg font-normal">
-                    حفظ كلمة المرور
+                <Button type="submit"  className="w-auto px-8 py-2 text-lg font-normal" disabled={loading}>
+                    {loading ? <Loading type="dots" size="sm" text="جاري الحفظ..." color="light" /> : 'حفظ كلمة المرور'}
                 </Button>
             </div>
         </form>

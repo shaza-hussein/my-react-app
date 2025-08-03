@@ -31,7 +31,7 @@ export default function useResetPasswordForm({ phone_number, otp_code }) {
         password: values.password,
         password_confirmation: values.password_confirmation
       });
-      setSuccess("تم تعيين كلمة المرور بنجاح! سيتم تحويلك لتسجيل الدخول...");
+      setSuccess("تم تعيين كلمة المرور بنجاح! ");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       let msg = "فشل تعيين كلمة المرور. حاول مرة أخرى.";

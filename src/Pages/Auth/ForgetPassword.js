@@ -4,7 +4,8 @@ import logo from "../../Assets/images/logo.jpg";
 import InputField from "../../Components/InputField";
 import Button from "../../Components/Button";
 import Alert from '../../Components/Alert';
-import useForgetPasswordForm from '../../Hooks/useForgetPasswordForm';
+import { useForgetPasswordForm } from '../../Hooks';
+import Loading from '../../Components/Loading';
 
 const ForgetPassword = () => {
   const {
@@ -39,7 +40,7 @@ const ForgetPassword = () => {
           
           <div className="text-right mt-4 text-sm">
             <Button type="submit" disabled={loading}>
-              {loading ? "...جاري الإرسال" : "إرسال"}
+              {loading ? <Loading type="dots" size="sm" text="جاري الإرسال" color="light" /> : "إرسال"}
             </Button>
           </div>
         </form>

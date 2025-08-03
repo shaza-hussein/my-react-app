@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import {  handlePhoneInputKeyPress } from '../../Utils/validateForm';
 import Alert from '../../Components/Alert';
 import useLoginForm from '../../Hooks/useLoginForm';
+import Loading from '../../Components/Loading';
 
 
 const Login = () => {
@@ -45,7 +46,13 @@ const Login = () => {
           </Link>
         </div>
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "...جاري الدخول" : "تسجيل دخول"}
+          {isLoading ? (
+            <div className="flex items-center gap-3 m-1">
+              <Loading type="dots" size="md" text="جاري التسجيل ..." color="light" />
+            </div>
+          ) : (
+            "تسجيل دخول"
+          )}
         </Button>
 </form>
     {error && <Alert type="error">{error}</Alert>}
