@@ -9,3 +9,4 @@ export { default as useLogout } from './useLogout';
 export { default as useImagePreview } from './useImagePreview';
 export { default as useForgetPasswordForm } from './useForgetPasswordForm';
 export { default as useChangePassword } from './useChangePassword';
+export { default as useUsersList } from './useUsersList';

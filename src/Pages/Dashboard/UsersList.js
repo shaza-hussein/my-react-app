@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import Button from '../../Components/Button';
-import { FaEdit, FaTrash, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSearch, FaChevronLeft, FaChevronRight, FaBolt } from 'react-icons/fa';
+import { HiOutlineArrowUp, HiOutlineArrowDown } from 'react-icons/hi2';
 import userImg from '../../Assets/images/user.png';
 import { translateRole } from '../../Utils/roleTranslator';
+import { useUsersList } from '../../Hooks';
+import { ListLoading } from '../../Components/Loading';
+import Alert from '../../Components/Alert';
+import { formatDateOnly } from '../../Utils/dateFormatter';
 
-const statusStyles = {
-  active: 'bg-green-100 text-main1',
-  inactive: 'bg-red-100 text-accent',
-};
+
 
 const filters = [
   { label: 'الكل', value: 'all' },
@@ -17,58 +18,9 @@ const filters = [
   { label: 'تاجر', value: 'merchant' },
 ];
 
-const dummyUsers = [
-  {
-    firstName: 'محمد',
-    lastName: 'العلي',
-    phone: '0599123456',
-    status: 'active',
-    createdAt: '2024-06-01',
-    role: 'super_admin',
-    referrer: 'أحمد يوسف',
-    img: userImg,
-  },
-  {
-    firstName: 'سارة',
-    lastName: 'خالد',
-    phone: '0599988776',
-    status: 'inactive',
-    createdAt: '2024-05-20',
-    role: 'merchant',
-    referrer: 'محمد العلي',
-    img: userImg,
-  },
-  {
-    firstName: 'أحمد',
-    lastName: 'يوسف',
-    phone: '0599112233',
-    status: 'active',
-    createdAt: '2024-04-15',
-    role: 'admin',
-    referrer: '-',
-    img: userImg,
-  },
-  {
-    firstName: 'ليلى',
-    lastName: 'سالم',
-    phone: '0599001122',
-    status: 'inactive',
-    createdAt: '2024-03-10',
-    role: 'merchant',
-    referrer: 'سارة خالد',
-    img: userImg,
-  },
-  {
-    firstName: 'خالد',
-    lastName: 'سعيد',
-    phone: '0599345678',
-    status: 'active',
-    createdAt: '2024-02-28',
-    role: 'super_admin',
-    referrer: '-',
-    img: userImg,
-  },
-];
+
+
+
 
 const UsersList = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -76,31 +28,58 @@ const UsersList = () => {
   const [phoneFilter, setPhoneFilter] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [ordering, setOrdering] = useState('-created_at'); // الترتيب الافتراضي: الأحدث أولاً
 
-  // تصفية البيانات حسب الفلاتر والبحث
-  const filteredUsers = dummyUsers.filter(user => {
-    // فلترة حسب الفلتر الرئيسي
-    let matchesMainFilter = true;
-    if (selectedFilter === 'active' || selectedFilter === 'inactive') {
-      matchesMainFilter = user.status === selectedFilter;
-    } else if (selectedFilter === 'super_admin' || selectedFilter === 'merchant') {
-      matchesMainFilter = user.role === selectedFilter;
+
+
+  // دالة للترتيب
+  const handleSort = (field, direction = 'asc') => {
+    if (direction === 'asc') {
+      setOrdering(field); // ترتيب تصاعدي
+    } else {
+      setOrdering(`-${field}`); // ترتيب تنازلي
     }
-    // فلترة حسب الاسم
-    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-    const matchesName = nameFilter.trim() === '' || fullName.includes(nameFilter.trim().toLowerCase());
-    // فلترة حسب رقم الهاتف
-    const matchesPhone = phoneFilter.trim() === '' || user.phone.includes(phoneFilter.trim());
-    // فلترة حسب البحث العام
-    const searchVal = search.trim().toLowerCase();
-    const matchesSearch =
-      searchVal === '' ||
-      fullName.includes(searchVal) ||
-      user.phone.includes(searchVal) ||
-      (user.role && translateRole(user.role).includes(searchVal)) ||
-      (user.referrer && user.referrer.toLowerCase().includes(searchVal));
-    return matchesMainFilter && matchesName && matchesPhone && matchesSearch;
-  });
+  };
+
+  // بناء معاملات الطلب
+  const queryParams = {
+    page,
+    search: search.trim() || undefined,
+    name: nameFilter.trim() || undefined,
+    phone: phoneFilter.trim() || undefined,
+    is_active: selectedFilter === 'active' ? true : selectedFilter === 'inactive' ? false : undefined,
+    role: selectedFilter === 'super_admin' || selectedFilter === 'merchant' ? selectedFilter : undefined,
+    ordering
+  };
+
+  // جلب البيانات باستخدام الـ hook
+  const { users, total, loading, error, refetch } = useUsersList(queryParams);
+
+  // عرض رسالة الخطأ إذا وجدت
+  if (error) {
+    return (
+      <div className="p-6 bg-light min-h-screen font-tajawal">
+        <Alert 
+          type="error" 
+          message={error}
+          onClose={() => refetch()}
+        />
+      </div>
+    );
+  }
+
+  // عرض التحميل للصفحة كاملة إذا كان التحميل الأولي
+  if (loading && users.length === 0) {
+    return (
+      <div className="p-6 bg-light min-h-screen font-tajawal">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-main1">المستخدمون</h2>
+          <span className="text-gray-500 text-sm">جاري تحميل البيانات...</span>
+        </div>
+        <ListLoading count={5} />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-light min-h-screen font-tajawal">
@@ -108,7 +87,7 @@ const UsersList = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-main1">المستخدمون</h2>
-          <span className="text-gray-500 text-sm">إجمالي المستخدمين <b className="text-main2">{dummyUsers.length}</b></span>
+          <span className="text-gray-500 text-sm">إجمالي المستخدمين <b className="text-main2">{total}</b></span>
         </div>
         {/* حقل البحث العام */}
         <div className="w-full md:w-80">
@@ -146,9 +125,9 @@ const UsersList = () => {
               placeholder="فلترة بالاسم..."
               value={nameFilter}
               onChange={e => setNameFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-3xl border border-gray-200 bg-grayish text-main1 focus:outline-none focus:ring-2 focus:ring-main2 font-tajawal"
+              className="w-full pl-10 pr-4 py-2 rounded-3xl border border-gray-200 bg-grayish text-main1 focus:outline-none focus:ring-2 focus:ring-main1 font-tajawal"
             />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-main2" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-main1" />
           </div>
           <div className="relative w-full md:w-48">
             <input
@@ -156,10 +135,11 @@ const UsersList = () => {
               placeholder="فلترة برقم الهاتف..."
               value={phoneFilter}
               onChange={e => setPhoneFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-3xl border border-gray-200 bg-grayish text-main1 focus:outline-none focus:ring-2 focus:ring-main2 font-tajawal"
+              className="w-full pl-10 pr-4 py-2 rounded-3xl border border-gray-200 bg-grayish text-main1 focus:outline-none focus:ring-2 focus:ring-main1 font-tajawal"
             />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-main2" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-main1" />
           </div>
+
         </div>
       </div>
 
@@ -169,43 +149,131 @@ const UsersList = () => {
           <thead>
             <tr className="bg-grayish text-main1">
               <th className="p-4 text-center text"><input type="checkbox" /></th>
-              <th className="p-4 text-right">الاسم</th>
-              <th className="p-4 text-right">الكنية</th>
-              <th className="p-4 text-center">رقم الهاتف</th>
+              <th className="p-4 text-right">
+                <div className="flex items-center gap-2">
+                  <span>الاسم</span>
+                                    <div className="flex flex-row">
+                                         <button 
+                       onClick={() => handleSort('first_name', 'asc')}
+                       className="hover:text-main2 transition-colors "
+                       title=" ترتيب تصاعدي "
+                     >
+                       <HiOutlineArrowUp className={`w-3 h-3 ${ordering === 'first_name' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                     <button 
+                       onClick={() => handleSort('first_name', 'desc')}
+                       className="hover:text-main2 transition-colors "
+                       title="ترتيب تنازلي"
+                     >
+                       <HiOutlineArrowDown className={`w-3 h-3 ${ordering === '-first_name' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                  </div>
+                </div>
+              </th>
+              <th className="p-4 text-right">
+                <div className="flex items-center gap-2">
+                  <span>الكنية</span>
+                                    <div className="flex flex-row">
+                                         <button 
+                       onClick={() => handleSort('last_name', 'asc')}
+                       className="hover:text-main2 transition-colors "
+                       title="ترتيب تصاعدي"
+                     >
+                       <HiOutlineArrowUp className={`w-3 h-3 ${ordering === 'last_name' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                     <button 
+                       onClick={() => handleSort('last_name', 'desc')}
+                       className="hover:text-main2 transition-colors "
+                       title="ترتيب تنازلي "
+                     >
+                       <HiOutlineArrowDown className={`w-3 h-3 ${ordering === '-last_name' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                  </div>
+                </div>
+              </th>
+              <th className="p-4 text-center">
+                <div className="flex items-center gap-2 justify-center">
+                  <span>رقم الهاتف</span>
+                                    <div className="flex flex-row">
+                                         <button 
+                       onClick={() => handleSort('phone_number', 'asc')}
+                       className="hover:text-main2 transition-colors"
+                       title="ترتيب تصاعدي"
+                     >
+                       <HiOutlineArrowUp className={`w-3 h-3 ${ordering === 'phone_number' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                     <button 
+                       onClick={() => handleSort('phone_number', 'desc')}
+                       className="hover:text-main2 transition-colors "
+                       title="ترتيب تنازلي "
+                     >
+                       <HiOutlineArrowDown className={`w-3 h-3 ${ordering === '-phone_number' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                  </div>
+                </div>
+              </th>
               <th className="p-4 text-center">حالة الحساب</th>
-              <th className="p-4 text-center">تاريخ الإنشاء</th>
+              <th className="p-4 text-center">
+                <div className="flex items-center gap-2 justify-center">
+                  <span>تاريخ الإنشاء</span>
+                                    <div className="flex flex-row">
+                                         <button 
+                       onClick={() => handleSort('created_at', 'asc')}
+                       className="hover:text-main2 transition-colors"
+                       title="الأقدم أولاً"
+                     >
+                       <HiOutlineArrowUp className={`w-3 h-3 ${ordering === 'created_at' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                     <button 
+                       onClick={() => handleSort('created_at', 'desc')}
+                       className="hover:text-main2 transition-colors"
+                       title=" الأحدث أولاً"
+                     >
+                       <HiOutlineArrowDown className={`w-3 h-3 ${ordering === '-created_at' ? 'text-main1' : 'text-gray-400'}`} />
+                     </button>
+                  </div>
+                </div>
+              </th>
               <th className="p-4 text-center">الدور</th>
               <th className="p-4 text-center">المحيل</th>
               <th className="p-4 text-center">إجراء</th>
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length === 0 ? (
+            {users.length === 0 ? (
               <tr>
                 <td colSpan="9" className="text-center py-8 text-gray-400">لا يوجد مستخدمون مطابقون</td>
               </tr>
             ) : (
-              filteredUsers.map((user, idx) => (
+              users.map((user, idx) => (
                 <tr key={idx} className="border-b last:border-b-0 hover:bg-grayish/60 transition">
                   <td className="p-4 text-center"><input type="checkbox" /></td>
                   <td className="p-4 flex items-center gap-3">
-                    <img src={user.img} alt={user.firstName} className="w-10 h-10 rounded-full border border-gray-200 object-cover" />
-                    <span className="font-bold text-main1">{user.firstName}</span>
+                    <img src={user.profile_image || userImg} alt={user.first_name || user.firstName} className="w-10 h-10 rounded-full border border-gray-200 object-cover" />
+                    <span className="font-bold text-main1">{user.first_name || user.firstName}</span>
                   </td>
-                  <td className="p-4 text-main1">{user.lastName}</td>
-                  <td className="p-4 text-center">{user.phone}</td>
+                  <td className="p-4 text-main1">{user.last_name || user.lastName}</td>
+                  <td className="p-4 text-center">{user.phone_number}</td>
                   <td className="p-4 text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusStyles[user.status] || 'bg-gray-100 text-gray-500'}`}>{
-                      user.status === 'active' ? 'نشط' :
-                      user.status === 'inactive' ? 'غير نشط' : user.status
-                    }</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.is_active ? 'bg-green-100 text-main1' : 'bg-red-100 text-accent'}`}>
+                      {user.is_active ? 'نشط' : 'غير نشط'}
+                    </span>
                   </td>
-                  <td className="p-4 text-center">{user.createdAt}</td>
+                  <td className="p-4 text-center">{formatDateOnly(user.created_at)}</td>
                   <td className="p-4 text-center">{translateRole(user.role)}</td>
-                  <td className="p-4 text-center">{user.referrer}</td>
+                  <td className="p-4 text-center">{user.referrer || '-'}</td>
                   <td className="p-4 text-center flex items-center gap-2 justify-center">
                     <button className="p-2 rounded-lg hover:bg-main2/10 text-main2 transition"><FaEdit /></button>
-                    <button className="p-2 rounded-lg hover:bg-accent/10 text-accent transition"><FaTrash /></button>
+                    
+                    {!user.is_active ? (
+                      <button className="p-2 rounded-lg hover:bg-green-100 text-green-600 transition" title="تنشيط الحساب">
+                        <FaBolt />
+                      </button>
+                    ) : (
+                      <button className="p-2 rounded-lg hover:bg-accent/10 text-accent transition" title="إلغاء تنشيط الحساب">
+                        <FaTrash />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -216,7 +284,7 @@ const UsersList = () => {
 
       {/* التصفح */}
       <div className="flex items-center justify-between mt-6">
-        <div className="text-sm text-gray-500">عرض {filteredUsers.length} من {dummyUsers.length} مستخدم</div>
+        <div className="text-sm text-gray-500">عرض {users.length} من {total} مستخدم</div>
         <div className="flex items-center gap-2">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} className="p-2 rounded-3xl border border-gray-200 text-main1 disabled:opacity-50" disabled={page === 1}><FaChevronRight /></button>
           <span className="px-3 py-1 rounded-3xl bg-main1 text-light font-bold">{page}</span>

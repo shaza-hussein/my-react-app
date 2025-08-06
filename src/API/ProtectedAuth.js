@@ -7,7 +7,8 @@ import {
   DISABLE_USER,
   USER_REFERRAL,
   REMOVE_USER_REFERRAL,
-  CHANGE_PASSWORD
+  CHANGE_PASSWORD,
+  LIST_USERS
 } from "./Api";
 
 // تسجيل الخروج - طلب محمي
@@ -75,5 +76,11 @@ export const removeUserReferral = async (userId) => {
 // تغيير كلمة المرور - طلب محمي
 export const changePassword = async (data) => {
   const response = await axiosInstance.post(CHANGE_PASSWORD, data);
+  return response.data;
+};
+
+// جلب قائمة المستخدمين - طلب محمي (للمشرفين)
+export const getUsersList = async (params = {}) => {
+  const response = await axiosInstance.get(LIST_USERS, { params });
   return response.data;
 }; 

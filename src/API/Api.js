@@ -20,7 +20,7 @@ export const REGISTER_SUPER_ADMIN = `${baseURL}/auth/register/super-admin/`
 export const USER_PROFILE = `${baseURL}/auth/profile/`;
 
 export const UPDATE_USER_PROFILE = `${baseURL}/auth/profile/`;
-///////////////////////
+
 export const CHANGE_PASSWORD = `${baseURL}/auth/change-password/`;
 
 export const LIST_USERS = `${baseURL}/auth/admin/users/`;
