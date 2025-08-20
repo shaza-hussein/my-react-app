@@ -8,6 +8,7 @@ import Home from "../Pages/Dashboard/Home";
 import Profile from "../Pages/Auth/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import UsersList from "../Pages/Dashboard/UsersList";
+import Test from "../Pages/Dashboard/Test";
 // import LandingPage from "../Pages/LandingPage";
 
 export default function AppRoutes() {
@@ -74,7 +75,7 @@ export default function AppRoutes() {
       />
       <Route path="/forgetPassword" element={<ForgetPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      {/* <Route path="/home" element={<LandingPage />} /> */}
+      <Route path="/test" element={<Test />} />
       {/* أضف المزيد من الراوتات هنا */}
     </Routes>
   );

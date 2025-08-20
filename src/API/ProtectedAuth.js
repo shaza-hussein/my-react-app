@@ -82,5 +82,12 @@ export const changePassword = async (data) => {
 // جلب قائمة المستخدمين - طلب محمي (للمشرفين)
 export const getUsersList = async (params = {}) => {
   const response = await axiosInstance.get(LIST_USERS, { params });
-  return response.data;
+  const data = response.data;
+  // تطبيع الاستجابة إلى شكل موحّد لطبقة العرض
+  return {
+    users: data.results ?? [],
+    total: data.count ?? 0,
+    next: data.next ?? null,
+    previous: data.previous ?? null,
+  };
 }; 

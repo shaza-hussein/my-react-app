@@ -7,7 +7,9 @@ export default function useUsersList(queryParams = {}) {
     users: [], 
     total: 0, 
     page: 1, 
-    pageSize: 20 
+    pageSize: 20,
+    next: null,
+    previous: null,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,13 +20,15 @@ export default function useUsersList(queryParams = {}) {
       setError(null);
       
       try {
-        const response = await getUsersList(queryParams);
+        const { users, total, next, previous } = await getUsersList(queryParams);
         
         setData({
-          users: response.results || response.users || [],
-          total: response.count || response.total || 0,
-          page: response.page || queryParams.page || 1,
-          pageSize: response.page_size || response.pageSize || 20
+          users,
+          total,
+          page: queryParams.page ?? 1,
+          pageSize: queryParams.pageSize ?? 20,
+          next,
+          previous,
         });
       } catch (err) {
         const errorMessage = handleApiError(err);
@@ -36,13 +40,15 @@ export default function useUsersList(queryParams = {}) {
     };
 
     fetchUsers();
-  }, [JSON.stringify(queryParams)]);
+  }, [queryParams]);
 
   return { 
     users: data.users, 
     total: data.total, 
     page: data.page, 
     pageSize: data.pageSize,
+    next: data.next,
+    previous: data.previous,
     loading, 
     error,
     refetch: () => {
@@ -52,13 +58,15 @@ export default function useUsersList(queryParams = {}) {
         setError(null);
         
         try {
-          const response = await getUsersList(queryParams);
+          const { users, total, next, previous } = await getUsersList(queryParams);
           
           setData({
-            users: response.results || response.users || [],
-            total: response.count || response.total || 0,
-            page: response.page || queryParams.page || 1,
-            pageSize: response.page_size || response.pageSize || 20
+            users,
+            total,
+            page: queryParams.page ?? 1,
+            pageSize: queryParams.pageSize ?? 20,
+            next,
+            previous,
           });
         } catch (err) {
           const errorMessage = handleApiError(err);
